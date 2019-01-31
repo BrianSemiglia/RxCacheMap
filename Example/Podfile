@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'RxCacheMap_Example' do
+  pod 'RxCacheMap', :path => '../'
+
+  target 'RxCacheMap_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
