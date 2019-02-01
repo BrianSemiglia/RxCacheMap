@@ -7,18 +7,49 @@
 //
 
 import UIKit
+import RxCacheMap
+import RxSwift
+import RxCocoa
 
 class ViewController: UIViewController {
-
+    
+    private let cleanup = DisposeBag()
+    @IBOutlet private var input: UISearchBar!
+    @IBOutlet private var output: UITextView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        
+        input
+            .rx
+            .text
+            .flatMap { $0.map(Observable.just) ?? .never() }
+            .map { $0.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) }
+            .flatMap { $0.map(Observable.just) ?? .never() }
+            .cacheFlatMapLatest {
+                URLSession
+                    .shared
+                    .rx
+                    .response(
+                        request: URLRequest(
+                            url: URL(
+                                string: "https://en.wikipedia.org/?search=" + $0
+                            )!
+                        )
+                    )
+                    .map {
+                        try? NSAttributedString.init(
+                            data: $0.data,
+                            options: [.documentType: NSAttributedString.DocumentType.html],
+                            documentAttributes: nil
+                        )
+                    }
+                    .flatMap { $0.map(Observable.just) ?? .never() }
+            }
+            .observeOn(MainScheduler.instance)
+            .bind(to: output.rx.attributedText)
+            .disposed(by: cleanup)
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-
+    
 }
 
