@@ -23,33 +23,36 @@ class ViewController: UIViewController {
         input
             .rx
             .text
-            .flatMap { $0.map(Observable.just) ?? .never() }
-            .map { $0.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) }
-            .flatMap { $0.map(Observable.just) ?? .never() }
+            .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .cacheFlatMapLatest {
-                URLSession
-                    .shared
-                    .rx
-                    .response(
-                        request: URLRequest(
-                            url: URL(
-                                string: "https://en.wikipedia.org/?search=" + $0
-                            )!
-                        )
-                    )
-                    .map {
-                        try? NSAttributedString.init(
+                Observable
+                    .just($0)
+                    .unwrap()
+                    .unwrapMap { $0.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) }
+                    .unwrapMap { URL(string: "https://en.wikipedia.org/?search=" + $0) }
+                    .map       { URLRequest(url: $0) }
+                    .flatMap   (URLSession.shared.rx.response)
+                    .unwrapMap {
+                        try? NSAttributedString(
                             data: $0.data,
                             options: [.documentType: NSAttributedString.DocumentType.html],
                             documentAttributes: nil
                         )
                     }
-                    .flatMap { $0.map(Observable.just) ?? .never() }
             }
             .observeOn(MainScheduler.instance)
             .bind(to: output.rx.attributedText)
             .disposed(by: cleanup)
     }
     
+}
+
+extension ObservableType {
+    public func unwrap<T>() -> Observable<T> where E == T? { return
+        flatMap { $0.map(Observable.just) ?? .never() }
+    }
+    func unwrapMap<U>(_ f: @escaping (E) -> U?) -> Observable<U> { return
+        map(f).unwrap()
+    }
 }
 
