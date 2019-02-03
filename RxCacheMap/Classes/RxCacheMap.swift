@@ -88,7 +88,7 @@ extension ObservableType where E: Hashable {
             cache: Self.adding(
                 key: $1 as AnyObject,
                 value: input($1).share(
-                    replay: 999999,
+                    replay: 0,
                     scope: .forever
                 ),
                 cache: reset($1) ? NSCache() : $0.cache
@@ -147,7 +147,7 @@ extension ObservableType where E: Hashable {
         let now = { Date() }
         return input(key)
             .share(
-                replay: 999999,
+                replay: 0,
                 scope: .forever
             )
             .flatMap { new, expiration in

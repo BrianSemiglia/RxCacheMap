@@ -96,31 +96,31 @@ class RxCacheTests: XCTestCase {
     
     func testCacheFlatMapMultiple() {
         let x = expectation(description: "")
-        var originalPlayback: Int = 0
-        var responses: [Int] = []
+        var cacheMisses: Int = 0
+        var responses: [String] = []
         Observable
             .from([
                 1,
                 1,
             ])
-            .cacheFlatMap { x -> Observable<Int> in
-                Observable<Int>
+            .cacheFlatMap { _ -> Observable<String> in
+                Observable<String>
                     .create {
-                        $0.on(.next(x))
-                        $0.on(.next(x))
+                        cacheMisses += 1
+                        $0.on(.next("1"))
+                        $0.on(.next("2"))
+                        $0.on(.next("3"))
+                        $0.on(.next("4"))
+                        $0.on(.next("5"))
                         $0.on(.completed)
                         return Disposables.create()
-                    }
-                    .map { x -> Int in
-                        originalPlayback += 1
-                        return x
                     }
             }
             .subscribe(
                 onNext: { responses += [$0] },
                 onCompleted: {
-                    XCTAssert(originalPlayback == 2)
-                    XCTAssert(responses.count == 4)
+                    XCTAssertEqual(cacheMisses, 1)
+                    XCTAssertEqual(responses.reduce("", +), "1234512345")
                     x.fulfill()
                 }
             )
