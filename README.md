@@ -9,7 +9,32 @@
 
 To run the example project, clone the repo, and run `pod install` from the Example directory first.
 
-## Requirements
+## Usage
+
+```swift
+queries.cacheMap { x -> URL? in
+    // Closure executed once per unique `x`, replayed when not unique
+    URL(string: "http://..." + x)
+}
+
+queries.cacheFlatMap { x -> Observable<JSON> in
+    // Returned observable executed once per unique `x`, replayed when not unique
+    NetworkRequest( ... + x).map { /* parse data */ }
+}
+
+queries.cacheFlatMapLatest { x -> Observable<JSON> in
+    // Returned observable executed once per unique `x`, replayed when not unique
+    // Any in-flight plays/replays are canceled by subsequent inputs
+    NetworkRequest( ... + x).map { /* parse data */ }
+}
+
+queries.cacheFlatMapUntilExpired { x -> Observable<(JSON, Date)> in
+    // Returned observable executed once per unique `x`, replayed when not unique until date output by returned observable is less than date when subsequent input is received
+    NetworkRequest( ... + $0).map { response in 
+        return (response.data, response.expirationDate)
+    }
+}
+```
 
 ## Installation
 
