@@ -47,7 +47,7 @@ pod 'RxCacheMap'
 
 ## Author
 
-brian.semiglia@gmail.com, brian.semiglia@gmail.com
+brian.semiglia@gmail.com
 
 ## License
 
