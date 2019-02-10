@@ -149,7 +149,7 @@ extension ObservableType where E: Hashable {
             .multicast(ReplaySubject.createUnbounded())
             .refCount()
             .flatMap { new, expiration in
-                expiration > now()
+                expiration >= now()
                     ? Observable.just(new)
                     : replayingUntilExpired(input: input, key: key)
             }
