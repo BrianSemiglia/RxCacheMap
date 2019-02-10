@@ -29,9 +29,9 @@ queries.cacheFlatMapLatest { x -> Observable<JSON> in
 }
 
 queries.cacheFlatMapUntilExpired { x -> Observable<(JSON, Date)> in
-    // Returned observable executed once per unique `x`, replayed when not unique until date output by returned observable is less than date when subsequent input is received
+    // Returned observable executed once per unique `x`, replayed when not unique until date output by returned observable is greater than or equal to date of subsequent replays
     NetworkRequest( ... + $0).map { response in 
-        return (response.data, response.expirationDate)
+        return (response.JSON, response.expirationDate)
     }
 }
 ```
@@ -47,7 +47,7 @@ pod 'RxCacheMap'
 
 ## Author
 
-brian.semiglia@gmail.com, brian.semiglia@gmail.com
+brian.semiglia@gmail.com
 
 ## License
 
