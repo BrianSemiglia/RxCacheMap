@@ -3,8 +3,8 @@ use_frameworks!
 
 target 'RxCacheMap_Example' do
   pod 'RxCacheMap', :path => '../'
-  pod 'RxSwift', '~> 4.4.0'
-  pod 'RxCocoa', '~> 4.4.0'
+  pod 'RxSwift', '~> 4.4.1'
+  pod 'RxCocoa', '~> 4.4.1'
   target 'RxCacheMap_Tests' do
     inherit! :search_paths
   end
