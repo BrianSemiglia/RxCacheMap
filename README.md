@@ -5,9 +5,9 @@
 [![License](https://img.shields.io/cocoapods/l/RxCacheMap.svg?style=flat)](https://cocoapods.org/pods/RxCacheMap)
 [![Platform](https://img.shields.io/cocoapods/p/RxCacheMap.svg?style=flat)](https://cocoapods.org/pods/RxCacheMap)
 
-## Example
+## Description
 
-To run the example project, clone the repo, and run `pod install` from the Example directory first.
+Cache the output of rx observables using cacheMap, cacheFlatMap, cacheFlatMapLatest and cacheFlatMapUntilExpired.
 
 ## Usage
 
@@ -35,6 +35,10 @@ queries.cacheFlatMapUntilExpired { x -> Observable<(JSON, Date)> in
     }
 }
 ```
+
+## Example
+
+To run the example project, clone the repo, and run `pod install` from the Example directory first.
 
 ## Installation
 
