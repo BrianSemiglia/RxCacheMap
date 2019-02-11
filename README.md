@@ -7,7 +7,7 @@
 
 ## Description
 
-Cache the output of rx observables using cacheMap, cacheFlatMap, cacheFlatMapLatest and cacheFlatMapUntilExpired.
+Cache/memoize the output of rx observables using cacheMap, cacheFlatMap, cacheFlatMapLatest and cacheFlatMapUntilExpired.
 
 ## Usage
 
