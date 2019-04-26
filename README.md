@@ -19,19 +19,19 @@ queries.cacheMap { x -> URL? in
 
 queries.cacheFlatMap { x -> Observable<JSON> in
     // Returned observable executed once per unique `x`, replayed when not unique
-    NetworkRequest( ... + x).map { /* parse data */ }
+    NetworkRequest(x).map { /* parse data */ }
 }
 
 queries.cacheFlatMapLatest { x -> Observable<JSON> in
     // Returned observable executed once per unique `x`, replayed when not unique
     // Any in-flight plays/replays are canceled by subsequent inputs
-    NetworkRequest( ... + x).map { /* parse data */ }
+    NetworkRequest(x).map { /* parse data */ }
 }
 
 queries.cacheFlatMapUntilExpired { x -> Observable<(JSON, Date)> in
     // Returned observable executed once per unique `x`, replayed when not unique until date 
     // output by returned observable is greater than or equal to date of subsequent replays
-    NetworkRequest( ... + $0).map { response in 
+    NetworkRequest(x).map { response in 
         return (response.JSON, response.expirationDate)
     }
 }
