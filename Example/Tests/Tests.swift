@@ -171,13 +171,13 @@ class RxCacheTests: XCTestCase {
             .merge(
                 Observable
                     .just(2)
-                    .delay(0, scheduler: MainScheduler.instance), // cancelled
+                    .delay(.seconds(0), scheduler: MainScheduler.instance), // cancelled
                 Observable
                     .just(1)
-                    .delay(0.5, scheduler: MainScheduler.instance), // succeeds
+                    .delay(.milliseconds(Int(0.5 * 1000)), scheduler: MainScheduler.instance), // succeeds
                 Observable
                     .just(1)
-                    .delay(2.0, scheduler: MainScheduler.instance) // succeeds from cache
+                    .delay(.seconds(2), scheduler: MainScheduler.instance) // succeeds from cache
             )
             .cacheFlatMapLatest { x in
                 Observable<Int>
@@ -187,7 +187,7 @@ class RxCacheTests: XCTestCase {
                         o.on(.completed)
                         return Disposables.create()
                     }
-                    .delay(1, scheduler: MainScheduler.instance)
+                    .delay(.seconds(1), scheduler: MainScheduler.instance)
             }
             .subscribe(
                 onNext: { responses += [$0] },
@@ -210,13 +210,13 @@ class RxCacheTests: XCTestCase {
             .merge(
                 Observable
                     .just(1)
-                    .delay(0, scheduler: MainScheduler.instance), // called
+                    .delay(.seconds(0), scheduler: MainScheduler.instance), // called
                 Observable
                     .just(1)
-                    .delay(0.5, scheduler: MainScheduler.instance), // cached
+                    .delay(.milliseconds(Int(0.5 * 1000)), scheduler: MainScheduler.instance), // cached
                 Observable
                     .just(1)
-                    .delay(1.0, scheduler: MainScheduler.instance) // invalidate, called
+                    .delay(.seconds(1), scheduler: MainScheduler.instance) // invalidate, called
             )
             .cacheFlatMapUntilExpired { (x: Int) -> Observable<(Int, Date)> in
                 Observable.create { o in
@@ -252,13 +252,13 @@ class RxCacheTests: XCTestCase {
             .merge(
                 Observable
                     .just(1)
-                    .delay(0, scheduler: MainScheduler.instance), // called
+                    .delay(.seconds(0), scheduler: MainScheduler.instance), // called
                 Observable
                     .just(1)
-                    .delay(0.5, scheduler: MainScheduler.instance), // cached
+                    .delay(.milliseconds(Int(0.5 * 1000)), scheduler: MainScheduler.instance), // cached
                 Observable
                     .just(1)
-                    .delay(1.0, scheduler: MainScheduler.instance) // invalidated, called
+                    .delay(.seconds(1), scheduler: MainScheduler.instance) // invalidated, called
             )
             .cacheFlatMapUntilExpired { (x: Int) -> Observable<(Int, Date)> in
                 Observable.create { o in
