@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'RxCacheMap'
-  s.version          = '0.1.6'
+  s.version          = '0.2.0'
   s.summary          = 'A collection of caching RxSwift operators.'
   s.description      = 'Cache the output of rx observables using cacheMap, cacheFlatMap, cacheFlatMapLatest and cacheFlatMapUntilExpired.'
   s.homepage         = 'https://github.com/briansemiglia/RxCacheMap'
@@ -14,6 +14,6 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '8.0'
   s.macos.deployment_target = '10.9'
   s.source_files = 'RxCacheMap/Classes/**/*'
-  s.swift_version = '4.2'  
-  s.dependency 'RxSwift', '~> 4.4.1'
+  s.swift_version = '5.0'
+  s.dependency 'RxSwift', '~> 5.0'
 end

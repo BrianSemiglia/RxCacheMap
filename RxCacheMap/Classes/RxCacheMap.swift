@@ -1,9 +1,9 @@
 import RxSwift
 
-extension ObservableType where E: Hashable {
+extension ObservableType where Element: Hashable {
     
     public func cacheMap<T>(
-        _ input: @escaping (E) -> T
+        _ input: @escaping (Element) -> T
     ) -> Observable<T> { return
         cacheMap(transform: input)
     }
@@ -12,12 +12,12 @@ extension ObservableType where E: Hashable {
      Caches events and replays when latest incoming value equals a previous else produces new events.
      */
     public func cacheMap<T>(
-        transform input: @escaping (E) -> T,
-        resettingWhen reset: @escaping (E) -> Bool = { _ in false }
+        transform input: @escaping (Element) -> T,
+        resettingWhen reset: @escaping (Element) -> Bool = { _ in false }
     ) -> Observable<T> { return
         scan((
             cache: NSCache<AnyObject, AnyObject>(),
-            key: Optional<E>.none
+            key: Optional<Element>.none
         )) {(
             cache: Self.adding(
                 key: $1 as AnyObject,
@@ -31,7 +31,7 @@ extension ObservableType where E: Hashable {
     }
     
     public func cacheFlatMap<T>(
-        _ input: @escaping (E) -> Observable<T>
+        _ input: @escaping (Element) -> Observable<T>
     ) -> Observable<T> { return
         cacheFlatMap(observable: input)
     }
@@ -40,8 +40,8 @@ extension ObservableType where E: Hashable {
      Caches observables and replays their events when latest incoming value equals a previous else produces new events.
      */
     public func cacheFlatMap<T>(
-        observable input: @escaping (E) -> Observable<T>,
-        resettingWhen reset: @escaping (E) -> Bool = { _ in false }
+        observable input: @escaping (Element) -> Observable<T>,
+        resettingWhen reset: @escaping (Element) -> Bool = { _ in false }
     ) -> Observable<T> { return
         cachedReplay(
             observable: input,
@@ -54,7 +54,7 @@ extension ObservableType where E: Hashable {
     }
     
     public func cacheFlatMapLatest<T>(
-        _ input: @escaping (E) -> Observable<T>
+        _ input: @escaping (Element) -> Observable<T>
     ) -> Observable<T> { return
         cacheFlatMapLatest(observable: input)
     }
@@ -64,8 +64,8 @@ extension ObservableType where E: Hashable {
      Cancels playback of previous observables.
      */
     public func cacheFlatMapLatest<T>(
-        observable input: @escaping (E) -> Observable<T>,
-        resettingWhen reset: @escaping (E) -> Bool = { _ in false }
+        observable input: @escaping (Element) -> Observable<T>,
+        resettingWhen reset: @escaping (Element) -> Bool = { _ in false }
     ) -> Observable<T> { return
         cachedReplay(
             observable: input,
@@ -78,12 +78,12 @@ extension ObservableType where E: Hashable {
     }
     
     private func cachedReplay<T>(
-        observable input: @escaping (E) -> Observable<T>,
-        resettingWhen reset: @escaping (E) -> Bool = { _ in false }
-    ) -> Observable<(cache: NSCache<AnyObject, Observable<T>>, key: E?)> { return
+        observable input: @escaping (Element) -> Observable<T>,
+        resettingWhen reset: @escaping (Element) -> Bool = { _ in false }
+    ) -> Observable<(cache: NSCache<AnyObject, Observable<T>>, key: Element?)> { return
         scan((
             cache: NSCache<AnyObject, Observable<T>>(),
-            key: Optional<E>.none
+            key: Optional<Element>.none
         )) {(
             cache: Self.adding(
                 key: $1 as AnyObject,
@@ -98,7 +98,7 @@ extension ObservableType where E: Hashable {
     }
     
     public func cacheFlatMapUntilExpired<T>(
-        _ input: @escaping (E) -> Observable<(T, Date)>
+        _ input: @escaping (Element) -> Observable<(T, Date)>
     ) -> Observable<T> { return
         cacheFlatMapUntilExpired(observable: input)
     }
@@ -107,8 +107,8 @@ extension ObservableType where E: Hashable {
      Caches observables and replays their events when latest incoming value equals a previous value and output Date is greater than Date of event else produces new events.
      */
     public func cacheFlatMapUntilExpired<T>(
-        observable input: @escaping (E) -> Observable<(T, Date)>,
-        resettingWhen reset: @escaping (E) -> Bool = { _ in false }
+        observable input: @escaping (Element) -> Observable<(T, Date)>,
+        resettingWhen reset: @escaping (Element) -> Bool = { _ in false }
     ) -> Observable<T> { return
         cachedReplayUntilExpired(
             observable: input,
@@ -121,12 +121,12 @@ extension ObservableType where E: Hashable {
     }
     
     private func cachedReplayUntilExpired<T>(
-        observable input: @escaping (E) -> Observable<(T, Date)>,
-        resettingWhen reset: @escaping (E) -> Bool = { _ in false }
-    ) -> Observable<(cache: NSCache<AnyObject, Observable<T>>, key: E?)> { return
+        observable input: @escaping (Element) -> Observable<(T, Date)>,
+        resettingWhen reset: @escaping (Element) -> Bool = { _ in false }
+    ) -> Observable<(cache: NSCache<AnyObject, Observable<T>>, key: Element?)> { return
         scan((
             cache: NSCache<AnyObject, Observable<T>>(),
-            key: Optional<E>.none
+            key: Optional<Element>.none
         )) { sum, new in (
             cache: Self.adding(
                 key: new as AnyObject,
