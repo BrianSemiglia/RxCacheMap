@@ -7,7 +7,7 @@
 
 ## Description
 
-Cache/memoize the output of observables using cacheMap, cacheFlatMap, cacheFlatMapLatest and cacheFlatMapUntilExpired.
+Cache/memoize the output of Observables using cacheMap, cacheFlatMap, cacheFlatMapLatest and cacheFlatMapUntilExpired.
 
 ## Usage
 
