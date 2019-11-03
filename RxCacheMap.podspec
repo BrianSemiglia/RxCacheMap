@@ -14,6 +14,6 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '8.0'
   s.macos.deployment_target = '10.9'
   s.source_files = 'RxCacheMap/Classes/**/*'
-  s.swift_version = '5.0'
+  s.swift_version = '5.1'
   s.dependency 'RxSwift', '~> 5.0'
 end
