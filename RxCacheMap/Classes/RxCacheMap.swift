@@ -47,10 +47,7 @@ extension ObservableType where Element: Hashable {
             observable: input,
             resettingWhen: reset
         )
-        .flatMap {
-            $0.cache.object(forKey: $0.key as AnyObject)
-            ?? .never()
-        }
+        .flatMap { $0 }
     }
     
     public func cacheFlatMapLatest<T>(
@@ -71,16 +68,13 @@ extension ObservableType where Element: Hashable {
             observable: input,
             resettingWhen: reset
         )
-        .flatMapLatest {
-            $0.cache.object(forKey: $0.key as AnyObject)
-            ?? .never()
-        }
+        .flatMapLatest { $0 }
     }
     
     private func cachedReplay<T>(
         observable input: @escaping (Element) -> Observable<T>,
         resettingWhen reset: @escaping (Element) -> Bool = { _ in false }
-    ) -> Observable<(cache: NSCache<AnyObject, Observable<T>>, key: Element?)> {
+    ) -> Observable<Observable<T>> {
         scan((
             cache: NSCache<AnyObject, Observable<T>>(),
             key: Optional<Element>.none
@@ -95,6 +89,10 @@ extension ObservableType where Element: Hashable {
             ),
             key: $1
         )}
+        .map {
+            $0.cache.object(forKey: $0.key as AnyObject)
+            ?? .never()
+        }
     }
     
     public func cacheFlatMapUntilExpired<T>(
@@ -114,16 +112,13 @@ extension ObservableType where Element: Hashable {
             observable: input,
             resettingWhen: reset
         )
-        .flatMap {
-            $0.cache.object(forKey: $0.key as AnyObject)
-            ?? .never()
-        }
+        .flatMap { $0 }
     }
     
     private func cachedReplayUntilExpired<T>(
         observable input: @escaping (Element) -> Observable<(T, Date)>,
         resettingWhen reset: @escaping (Element) -> Bool = { _ in false }
-    ) -> Observable<(cache: NSCache<AnyObject, Observable<T>>, key: Element?)> {
+    ) -> Observable<Observable<T>> {
         scan((
             cache: NSCache<AnyObject, Observable<T>>(),
             key: Optional<Element>.none
@@ -138,6 +133,10 @@ extension ObservableType where Element: Hashable {
             ),
             key: new
         )}
+        .map {
+            $0.cache.object(forKey: $0.key as AnyObject)
+            ?? .never()
+        }
     }
     
     private static func replayingUntilExpired<T, U>(
