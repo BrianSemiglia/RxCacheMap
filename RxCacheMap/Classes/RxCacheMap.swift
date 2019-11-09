@@ -13,7 +13,7 @@ extension ObservableType where Element: Hashable {
      */
     public func cacheMap<T>(
         transform input: @escaping (Element) -> T,
-        resettingWhen reset: @escaping (Element) -> Bool = { _ in false }
+        when condition: @escaping (Element) -> Bool = { _ in true }
     ) -> Observable<T> {
         scan((
             cache: NSCache<AnyObject, AnyObject>(),
@@ -22,7 +22,7 @@ extension ObservableType where Element: Hashable {
             cache: Self.adding(
                 key: $1 as AnyObject,
                 value: input($1) as AnyObject,
-                cache: reset($1) ? NSCache() : $0.cache
+                cache: condition($1) ? $0.cache : NSCache()
             ),
             key: $1
         )}
@@ -41,11 +41,11 @@ extension ObservableType where Element: Hashable {
      */
     public func cacheFlatMap<T>(
         observable input: @escaping (Element) -> Observable<T>,
-        resettingWhen reset: @escaping (Element) -> Bool = { _ in false }
+        when condition: @escaping (Element) -> Bool = { _ in true }
     ) -> Observable<T> {
         cachedReplay(
             observable: input,
-            resettingWhen: reset
+            when: condition
         )
         .flatMap { $0 }
     }
@@ -62,18 +62,18 @@ extension ObservableType where Element: Hashable {
      */
     public func cacheFlatMapLatest<T>(
         observable input: @escaping (Element) -> Observable<T>,
-        resettingWhen reset: @escaping (Element) -> Bool = { _ in false }
+        when condition: @escaping (Element) -> Bool = { _ in true }
     ) -> Observable<T> {
         cachedReplay(
             observable: input,
-            resettingWhen: reset
+            when: condition
         )
         .flatMapLatest { $0 }
     }
     
     private func cachedReplay<T>(
         observable input: @escaping (Element) -> Observable<T>,
-        resettingWhen reset: @escaping (Element) -> Bool = { _ in false }
+        when condition: @escaping (Element) -> Bool = { _ in true }
     ) -> Observable<Observable<T>> {
         scan((
             cache: NSCache<AnyObject, Observable<T>>(),
@@ -85,7 +85,7 @@ extension ObservableType where Element: Hashable {
                     .multicast(ReplaySubject.createUnbounded())
                     .refCount()
                 ,
-                cache: reset($1) ? NSCache() : $0.cache
+                cache: condition($1) ? $0.cache : NSCache()
             ),
             key: $1
         )}
@@ -106,32 +106,32 @@ extension ObservableType where Element: Hashable {
      */
     public func cacheFlatMapUntilExpired<T>(
         observable input: @escaping (Element) -> Observable<(T, Date)>,
-        resettingWhen reset: @escaping (Element) -> Bool = { _ in false }
+        when condition: @escaping (Element) -> Bool = { _ in true }
     ) -> Observable<T> {
         cachedReplayUntilExpired(
             observable: input,
-            resettingWhen: reset
+            when: condition
         )
         .flatMap { $0 }
     }
     
     private func cachedReplayUntilExpired<T>(
         observable input: @escaping (Element) -> Observable<(T, Date)>,
-        resettingWhen reset: @escaping (Element) -> Bool = { _ in false }
+        when condition: @escaping (Element) -> Bool = { _ in true }
     ) -> Observable<Observable<T>> {
         scan((
             cache: NSCache<AnyObject, Observable<T>>(),
             key: Optional<Element>.none
-        )) { sum, new in (
+        )) {(
             cache: Self.adding(
-                key: new as AnyObject,
+                key: $1 as AnyObject,
                 value: Self.replayingUntilExpired(
                     input: input,
-                    key: new
+                    key: $1
                 ),
-                cache: reset(new) ? NSCache() : sum.cache
+                cache: condition($1) ? $0.cache : NSCache()
             ),
-            key: new
+            key: $1
         )}
         .map {
             $0.cache.object(forKey: $0.key as AnyObject)

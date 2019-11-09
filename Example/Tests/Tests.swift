@@ -47,9 +47,7 @@ class RxCacheTests: XCTestCase {
                     cacheMisses += 1
                     return x
                 },
-                resettingWhen: {
-                    $0 == 2
-                }
+                when: { $0 != 2 }
             )
             .subscribe(
                 onNext: { responses += [$0] },
@@ -148,7 +146,7 @@ class RxCacheTests: XCTestCase {
                         return Disposables.create()
                     }
                 },
-                resettingWhen: { $0 == 2 }
+                when: { $0 != 2 }
             )
             .subscribe(
                 onNext: { responses += [$0] },
