@@ -12,22 +12,29 @@ extension ObservableType where Element: Hashable {
      Caches events and replays when latest incoming value equals a previous else produces new events.
      */
     public func cacheMap<T>(
-        transform input: @escaping (Element) -> T,
+        transform: @escaping (Element) -> T,
         when condition: @escaping (Element) -> Bool = { _ in true }
     ) -> Observable<T> {
         scan((
             cache: NSCache<AnyObject, AnyObject>(),
-            key: Optional<Element>.none
+            key: Optional<Element>.none,
+            value: Optional<T>.none
         )) {(
-            cache: Self.adding(
+            cache: condition($1) == false ? $0.cache : Self.adding(
                 key: $1 as AnyObject,
-                value: input($1) as AnyObject,
+                value: transform($1) as AnyObject,
                 cache: condition($1) ? $0.cache : NSCache()
             ),
-            key: $1
+            key: $1,
+            value: condition($1)
+                ? nil
+                : transform($1)
         )}
-        .map { $0.cache.object(forKey: $0.key as AnyObject) as? T }
-        .flatMap { $0.map(Observable.just) ?? Observable.never() }
+        .map {
+            $0.value ??
+            $0.cache.object(forKey: $0.key as AnyObject) as? T
+        }
+        .flatMap { $0.map(Observable.just) ?? .never() }
     }
     
     public func cacheFlatMap<T>(
@@ -77,9 +84,10 @@ extension ObservableType where Element: Hashable {
     ) -> Observable<Observable<T>> {
         scan((
             cache: NSCache<AnyObject, Observable<T>>(),
-            key: Optional<Element>.none
+            key: Optional<Element>.none,
+            value: Optional<Observable<T>>.none
         )) {(
-            cache: Self.adding(
+            cache: condition($1) == false ? $0.cache : Self.adding(
                 key: $1 as AnyObject,
                 value: input($1)
                     .multicast(ReplaySubject.createUnbounded())
@@ -87,9 +95,11 @@ extension ObservableType where Element: Hashable {
                 ,
                 cache: condition($1) ? $0.cache : NSCache()
             ),
-            key: $1
+            key: $1,
+            value: condition($1) ? nil : input($1)
         )}
         .map {
+            $0.value ??
             $0.cache.object(forKey: $0.key as AnyObject)
             ?? .never()
         }

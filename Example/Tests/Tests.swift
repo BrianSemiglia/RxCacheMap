@@ -22,8 +22,8 @@ class RxCacheTests: XCTestCase {
             .subscribe(
                 onNext: { responses += [$0] },
                 onCompleted: {
-                    XCTAssert(cacheMisses == 1)
-                    XCTAssert(responses.count == 2)
+                    XCTAssertEqual(cacheMisses, 1)
+                    XCTAssertEqual(responses.count, 2)
                     x.fulfill()
                 }
             )
@@ -41,19 +41,20 @@ class RxCacheTests: XCTestCase {
                 1,
                 2,
                 1,
+                3
             ])
             .cacheMap(
                 transform: { x -> Int in
                     cacheMisses += 1
                     return x
                 },
-                when: { $0 != 2 }
+                when: { $0 == 1 }
             )
             .subscribe(
                 onNext: { responses += [$0] },
                 onCompleted: {
-                    XCTAssert(cacheMisses == 3)
-                    XCTAssert(responses.count == 3)
+                    XCTAssertEqual(cacheMisses, 3)
+                    XCTAssertEqual(responses.count, 4)
                     x.fulfill()
                 }
             )
@@ -136,6 +137,7 @@ class RxCacheTests: XCTestCase {
                 1,
                 2,
                 1,
+                3
             ])
             .cacheFlatMap(
                 observable: { x -> Observable<Int> in
@@ -146,13 +148,13 @@ class RxCacheTests: XCTestCase {
                         return Disposables.create()
                     }
                 },
-                when: { $0 != 2 }
+                when: { $0 == 1 }
             )
             .subscribe(
                 onNext: { responses += [$0] },
                 onCompleted: {
-                    XCTAssert(cacheMisses == 3)
-                    XCTAssert(responses.count == 3)
+                    XCTAssertEqual(cacheMisses, 3)
+                    XCTAssertEqual(responses.count, 4)
                     x.fulfill()
                 }
             )
