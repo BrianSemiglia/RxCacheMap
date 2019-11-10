@@ -17,6 +17,11 @@ queries.cacheMap { x -> URL? in
     URL(string: "http://..." + x)
 }
 
+queries.cacheMap(whenExceeding: 1) { x -> URL? in
+    // Closure executed once per unique `x` when operation exceeds duration, replayed when not unique
+    URL(string: "http://..." + x)
+}
+
 queries.cacheFlatMap { x -> Observable<JSON> in
     // Closure executed once per unique `x`, replayed when not unique
     NetworkRequest(x).map { /* parse data */ }
@@ -28,7 +33,7 @@ queries.cacheFlatMapLatest { x -> Observable<JSON> in
     NetworkRequest(x).map { /* parse data */ }
 }
 
-queries.cacheFlatMapUntilExpired { x -> Observable<(JSON, Date)> in
+queries.cacheFlatMapInvalidatingOn { x -> Observable<(JSON, Date)> in
     // Closure executed once per unique `x`, replayed when input not unique until date 
     // of output is greater than or equal to date of subsequent replay
     NetworkRequest(x).map { response in 

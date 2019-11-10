@@ -1,111 +1,76 @@
 import XCTest
 import RxCacheMap
 import RxSwift
+import RxTest
+import RxBlocking
 
 class RxCacheTests: XCTestCase {
-    
-    let cleanup = DisposeBag()
-    
-    func testCacheMap() {
-        let x = expectation(description: "")
-        var cacheMisses: Int = 0
-        var responses: [Int] = []
-        Observable
-            .from([
-                1,
-                1,
-            ])
-            .cacheMap { x -> Int in
-                cacheMisses += 1
-                return x
-            }
-            .subscribe(
-                onNext: { responses += [$0] },
-                onCompleted: {
-                    XCTAssert(cacheMisses == 1)
-                    XCTAssert(responses.count == 2)
-                    x.fulfill()
-                }
-            )
-            .disposed(by: cleanup)
         
-        waitForExpectations(timeout: 0.25)
+    func testCacheMap() {
+        var cacheMisses: Int = 0
+        try XCTAssertEqual(
+            Observable
+                .from([1, 1])
+                .cacheMap { x -> Int in
+                    cacheMisses += 1
+                    return x
+                }
+                .toBlocking()
+                .toArray(),
+            [1, 1]
+        )
+        XCTAssertEqual(
+            cacheMisses,
+            1
+        )
     }
     
     func testCacheMapReset() {
-        let x = expectation(description: "")
         var cacheMisses: Int = 0
-        var responses: [Int] = []
-        Observable
-            .from([
-                1,
-                2,
-                1,
-            ])
-            .cacheMap(
-                transform: { x -> Int in
-                    cacheMisses += 1
-                    return x
-                },
-                resettingWhen: {
-                    $0 == 2
-                }
-            )
-            .subscribe(
-                onNext: { responses += [$0] },
-                onCompleted: {
-                    XCTAssert(cacheMisses == 3)
-                    XCTAssert(responses.count == 3)
-                    x.fulfill()
-                }
-            )
-            .disposed(by: cleanup)
-        
-        waitForExpectations(timeout: 0.25)
+        try XCTAssertEqual(
+            Observable
+                .from([1, 2, 1, 3])
+                .cacheMap(
+                    transform: { x -> Int in
+                        cacheMisses += 1
+                        return x
+                    },
+                    when: { $0 == 1 }
+                )
+                .toBlocking()
+                .toArray(),
+            [1, 2, 1, 3]
+        )
+        XCTAssertEqual(cacheMisses, 3)
     }
     
     func testCacheFlatMapSingle() {
-        let x = expectation(description: "")
         var cacheMisses: Int = 0
-        var responses: [Int] = []
-        Observable
-            .from([
-                1,
-                1
-            ])
-            .cacheFlatMap { x -> Observable<Int> in
-                Observable.create { o in
-                    cacheMisses += 1
-                    o.on(.next(x))
-                    o.on(.completed)
-                    return Disposables.create()
+        try XCTAssertEqual(
+            Observable
+                .from([1, 1])
+                .cacheFlatMap { x -> Observable<Int> in
+                    Observable.create { o in
+                        cacheMisses += 1
+                        o.on(.next(x))
+                        o.on(.completed)
+                        return Disposables.create()
+                    }
                 }
-            }
-            .subscribe(
-                onNext: { responses += [$0] },
-                onCompleted: {
-                    XCTAssert(cacheMisses == 1)
-                    XCTAssert(responses.count == 2)
-                    x.fulfill()
-                }
-            )
-            .disposed(by: cleanup)
-        
-        waitForExpectations(timeout: 0.25)
+                .toBlocking()
+                .toArray(),
+            [1, 1]
+        )
+        XCTAssertEqual(cacheMisses, 1)
     }
     
     func testCacheFlatMapMultiple() {
-        let x = expectation(description: "")
         var cacheMisses: Int = 0
-        var responses: [String] = []
-        Observable
-            .from([
-                1,
-                1,
-            ])
-            .cacheFlatMap { _ -> Observable<String> in
-                Observable<String>
-                    .create {
+        try XCTAssertEqual(
+            Observable
+                .from([1, 1])
+                .cacheFlatMap { _ -> Observable<String> in
+                    Observable<String>.create {
                         cacheMisses += 1
                         $0.on(.next("1"))
                         $0.on(.next("2"))
@@ -115,174 +80,192 @@ class RxCacheTests: XCTestCase {
                         $0.on(.completed)
                         return Disposables.create()
                     }
-            }
-            .subscribe(
-                onNext: { responses += [$0] },
-                onCompleted: {
-                    XCTAssertEqual(cacheMisses, 1)
-                    XCTAssertEqual(responses.reduce("", +), "1234512345")
-                    x.fulfill()
                 }
-            )
-            .disposed(by: cleanup)
-        
-        waitForExpectations(timeout: 0.25)
+                .reduce("", accumulator: +)
+                .toBlocking()
+                .toArray(),
+            ["1234512345"]
+        )
+        XCTAssertEqual(cacheMisses, 1)
     }
     
     func testCacheFlatMapReset() {
-        let x = expectation(description: "")
         var cacheMisses: Int = 0
-        var responses: [Int] = []
-        Observable
-            .from([
-                1,
-                2,
-                1,
-            ])
-            .cacheFlatMap(
-                observable: { x -> Observable<Int> in
-                    Observable.create { o in
-                        cacheMisses += 1
-                        o.on(.next(x))
-                        o.on(.completed)
-                        return Disposables.create()
-                    }
-                },
-                resettingWhen: { $0 == 2 }
-            )
-            .subscribe(
-                onNext: { responses += [$0] },
-                onCompleted: {
-                    XCTAssert(cacheMisses == 3)
-                    XCTAssert(responses.count == 3)
-                    x.fulfill()
-                }
-            )
-            .disposed(by: cleanup)
-        
-        waitForExpectations(timeout: 0.25)
+        try XCTAssertEqual(
+            Observable
+                .from([1, 2, 1, 3])
+                .cacheFlatMap(
+                    observable: { x -> Observable<Int> in
+                        Observable.create { o in
+                            cacheMisses += 1
+                            o.on(.next(x))
+                            o.on(.completed)
+                            return Disposables.create()
+                        }
+                    },
+                    when: { $0 == 1 }
+                )
+                .toBlocking()
+                .toArray(),
+            [1, 2, 1, 3]
+        )
+        XCTAssertEqual(cacheMisses, 3)
     }
     
     func testCacheFlatMapLatest() {
-        let x = expectation(description: "")
         var cacheMisses: Int = 0
-        var responses: [Int] = []
-        Observable
-            .merge(
-                Observable
-                    .just(2)
-                    .delay(.seconds(0), scheduler: MainScheduler.instance), // cancelled
-                Observable
-                    .just(1)
-                    .delay(.milliseconds(Int(0.5 * 1000)), scheduler: MainScheduler.instance), // succeeds
-                Observable
-                    .just(1)
-                    .delay(.seconds(2), scheduler: MainScheduler.instance) // succeeds from cache
-            )
-            .cacheFlatMapLatest { x in
-                Observable<Int>
-                    .create { o in
+        try XCTAssertEqual(
+            Observable
+                .merge(
+                    Observable
+                        .just(2)
+                        .delay(.seconds(0), scheduler: MainScheduler.instance), // cancelled
+                    Observable
+                        .just(1)
+                        .delay(.milliseconds(Int(0.5 * 1000)), scheduler: MainScheduler.instance), // succeeds
+                    Observable
+                        .just(1)
+                        .delay(.seconds(2), scheduler: MainScheduler.instance) // succeeds from cache
+                )
+                .cacheFlatMapLatest { x in
+                    Observable<Int>
+                        .create { o in
+                            cacheMisses += 1
+                            o.on(.next(x))
+                            o.on(.completed)
+                            return Disposables.create()
+                        }
+                        .delay(
+                            .seconds(1),
+                            scheduler: MainScheduler.instance
+                        )
+                }
+                .toBlocking()
+                .toArray(),
+            [1, 1]
+        )
+        XCTAssertEqual(cacheMisses, 2)
+    }
+    
+    func testCacheFlatMapInvalidatingOnNever() {
+        var cacheMisses: Int = 0
+        try XCTAssertEqual(
+            Observable
+                .merge(
+                    Observable
+                        .just(1)
+                        .delay(.seconds(0), scheduler: MainScheduler.instance), // called
+                    Observable
+                        .just(1)
+                        .delay(.milliseconds(Int(0.5 * 1000)), scheduler: MainScheduler.instance), // cached
+                    Observable
+                        .just(1)
+                        .delay(.seconds(1), scheduler: MainScheduler.instance) // invalidate, called
+                )
+                .cacheFlatMapInvalidatingOn { (x: Int) -> Observable<(Int, Date)> in
+                    Observable.create { o in
                         cacheMisses += 1
-                        o.on(.next(x))
+                        o.on(
+                            .next((
+                                x,
+                                Date() + 2
+                            ))
+                        )
                         o.on(.completed)
                         return Disposables.create()
                     }
-                    .delay(.seconds(1), scheduler: MainScheduler.instance)
-            }
-            .subscribe(
-                onNext: { responses += [$0] },
-                onCompleted: {
-                    XCTAssert(cacheMisses == 2)
-                    XCTAssert(responses == [1, 1])
-                    x.fulfill()
                 }
-            )
-            .disposed(by: cleanup)
-        
-        waitForExpectations(timeout: 4)
+                .toBlocking()
+                .toArray(),
+            [1, 1, 1]
+        )
+        XCTAssertEqual(cacheMisses, 1)
     }
     
-    func testCacheFlatMapUntilExpiredValid() {
-        let x = expectation(description: "")
+    func testCacheFlatMapInvalidatingOnSome() {
         var cacheMisses: Int = 0
-        var responses: [Int] = []
-        Observable
-            .merge(
-                Observable
-                    .just(1)
-                    .delay(.seconds(0), scheduler: MainScheduler.instance), // called
-                Observable
-                    .just(1)
-                    .delay(.milliseconds(Int(0.5 * 1000)), scheduler: MainScheduler.instance), // cached
-                Observable
-                    .just(1)
-                    .delay(.seconds(1), scheduler: MainScheduler.instance) // invalidate, called
-            )
-            .cacheFlatMapUntilExpired { (x: Int) -> Observable<(Int, Date)> in
-                Observable.create { o in
-                    cacheMisses += 1
-                    o.on(
-                        .next((
-                            x,
-                            Date() + 2
-                        ))
-                    )
-                    o.on(.completed)
-                    return Disposables.create()
+        try XCTAssertEqual(
+            Observable
+                .merge(
+                    Observable
+                        .just(1)
+                        .delay(.seconds(0), scheduler: MainScheduler.instance), // called
+                    Observable
+                        .just(1)
+                        .delay(.milliseconds(Int(0.5 * 1000)), scheduler: MainScheduler.instance), // cached
+                    Observable
+                        .just(1)
+                        .delay(.seconds(1), scheduler: MainScheduler.instance) // invalidated, called
+                )
+                .cacheFlatMapInvalidatingOn { (x: Int) -> Observable<(Int, Date)> in
+                    Observable.create { o in
+                        cacheMisses += 1
+                        o.on(
+                            .next((
+                                x,
+                                Date() + 0.6
+                            ))
+                        )
+                        o.on(.completed)
+                        return Disposables.create()
+                    }
                 }
-            }
-            .subscribe(
-                onNext: { responses += [$0] },
-                onCompleted: {
-                    XCTAssert(cacheMisses == 1)
-                    XCTAssert(responses.count == 3)
-                    x.fulfill()
-                }
-            )
-            .disposed(by: cleanup)
-        
-        waitForExpectations(timeout: 1.2)
+                .toBlocking()
+                .toArray(),
+            [1, 1, 1]
+        )
+        XCTAssertEqual(cacheMisses, 2)
     }
     
-    func testCacheFlatMapUntilExpiredInvalidated() {
-        let x = expectation(description: "")
+    func testCacheMapWhenExceedingDurationAll() {
         var cacheMisses: Int = 0
-        var responses: [Int] = []
-        Observable
-            .merge(
-                Observable
-                    .just(1)
-                    .delay(.seconds(0), scheduler: MainScheduler.instance), // called
-                Observable
-                    .just(1)
-                    .delay(.milliseconds(Int(0.5 * 1000)), scheduler: MainScheduler.instance), // cached
-                Observable
-                    .just(1)
-                    .delay(.seconds(1), scheduler: MainScheduler.instance) // invalidated, called
-            )
-            .cacheFlatMapUntilExpired { (x: Int) -> Observable<(Int, Date)> in
-                Observable.create { o in
+        try XCTAssertEqual(
+            Observable
+                .from([1, 1])
+                .cacheMap(whenExceeding: 1) { x -> Int in
                     cacheMisses += 1
-                    o.on(
-                        .next((
-                            x,
-                            Date() + 0.6
-                        ))
-                    )
-                    o.on(.completed)
-                    return Disposables.create()
+                    Thread.sleep(forTimeInterval: 2)
+                    return x
                 }
-            }
-            .subscribe(
-                onNext: { responses += [$0] },
-                onCompleted: {
-                    XCTAssert(cacheMisses == 2)
-                    XCTAssert(responses.count == 3)
-                    x.fulfill()
-                }
-            )
-            .disposed(by: cleanup)
-        
-        waitForExpectations(timeout: 1.2)
+                .toBlocking()
+                .toArray(),
+            [1, 1]
+        )
+        XCTAssertEqual(cacheMisses, 1)
     }
+    
+    func testCacheMapWhenExceedingDurationSome() {
+        var cacheMisses: Int = 0
+        try XCTAssertEqual(
+            Observable
+                .from([1, 3, 1, 3])
+                .cacheMap(whenExceeding: 2) { x -> Int in
+                    cacheMisses += 1
+                    Thread.sleep(forTimeInterval: TimeInterval(x))
+                    return x
+                }
+                .toBlocking()
+                .toArray(),
+            [1, 3, 1, 3]
+        )
+        XCTAssertEqual(cacheMisses, 3)
+    }
+    
+    func testCacheMapWhenExceedingDurationNever() {
+        var cacheMisses: Int = 0
+        try XCTAssertEqual(
+            Observable
+                .from([1, 1])
+                .cacheMap(whenExceeding: 2) { x -> Int in
+                    cacheMisses += 1
+                    Thread.sleep(forTimeInterval: 1)
+                    return x
+                }
+                .toBlocking()
+                .toArray(),
+            [1, 1]
+        )
+        XCTAssertEqual(cacheMisses, 2)
+    }
+    
 }
