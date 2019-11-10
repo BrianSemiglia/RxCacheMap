@@ -3,6 +3,56 @@ import RxSwift
 extension ObservableType where Element: Hashable {
     
     public func cacheMap<T>(
+        whenExceeding duration: TimeInterval,
+        _ input: @escaping (Element) -> T
+    ) -> Observable<T> {
+        
+        scan((
+            cache: NSCache<AnyObject, AnyObject>(),
+            key: Optional<AnyObject>.none,
+            value: Optional<T>.none
+        )) {
+
+            if let _ = $0.cache.object(forKey: $1 as AnyObject) as? T {
+                return (
+                    cache: $0.cache,
+                    key: $1 as AnyObject,
+                    value: nil
+                )
+            } else {
+                let start = Date()
+                let result = input($1)
+                let end = Date()
+                if end.timeIntervalSince(start) > duration {
+                    return (
+                        cache: Self.adding(
+                            key: $1 as AnyObject,
+                            value: result as AnyObject,
+                            cache: $0.cache
+                        ),
+                        key: $1 as AnyObject,
+                        value: nil
+                    )
+                } else {
+                    return (
+                        cache: $0.cache,
+                        key: nil,
+                        value: result
+                    )
+                }
+            }
+        }
+        .map {
+            $0.value ??
+            $0.cache.object(forKey: $0.key as AnyObject) as? T
+        }
+        .flatMap {
+            $0.map(Observable.just) ??
+            .never()
+        }
+    }
+    
+    public func cacheMap<T>(
         _ input: @escaping (Element) -> T
     ) -> Observable<T> {
         cacheMap(transform: input)

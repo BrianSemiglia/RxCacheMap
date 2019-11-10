@@ -17,6 +17,11 @@ queries.cacheMap { x -> URL? in
     URL(string: "http://..." + x)
 }
 
+queries.cacheMap(whenExceeding: 1) { x -> URL? in
+    // Closure executed once per unique `x` when operation exceeds duration, replayed when not unique
+    URL(string: "http://..." + x)
+}
+
 queries.cacheFlatMap { x -> Observable<JSON> in
     // Closure executed once per unique `x`, replayed when not unique
     NetworkRequest(x).map { /* parse data */ }
