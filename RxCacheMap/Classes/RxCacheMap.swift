@@ -131,9 +131,10 @@ extension ObservableType where Element: Hashable {
     ) -> Observable<Observable<T>> {
         scan((
             cache: NSCache<AnyObject, Observable<T>>(),
-            key: Optional<Element>.none
+            key: Optional<Element>.none,
+            value: Optional<Observable<T>>.none
         )) {(
-            cache: Self.adding(
+            cache: condition($1) == false ? $0.cache : Self.adding(
                 key: $1 as AnyObject,
                 value: Self.replayingUntilExpired(
                     input: input,
@@ -141,11 +142,13 @@ extension ObservableType where Element: Hashable {
                 ),
                 cache: condition($1) ? $0.cache : NSCache()
             ),
-            key: $1
+            key: $1,
+            value: condition($1) ? nil : input($1).map { $0.0 }
         )}
         .map {
-            $0.cache.object(forKey: $0.key as AnyObject)
-            ?? .never()
+            $0.value ??
+            $0.cache.object(forKey: $0.key as AnyObject) ??
+            .never()
         }
     }
     
