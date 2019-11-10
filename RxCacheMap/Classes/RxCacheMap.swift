@@ -137,8 +137,7 @@ extension ObservableType where Element: Hashable {
             cache: condition($1) == false ? $0.cache : Self.adding(
                 key: $1 as AnyObject,
                 value: Self.replayingInvalidatingOn(
-                    input: input,
-                    key: $1
+                    input: input($1)
                 ),
                 cache: $0.cache
             ),
@@ -152,18 +151,19 @@ extension ObservableType where Element: Hashable {
         }
     }
     
-    private static func replayingInvalidatingOn<T, U>(
-        input: @escaping (U) -> Observable<(T, Date)>,
-        key: U
+    private static func replayingInvalidatingOn<T>(
+        input: Observable<(T, Date)>
     ) -> Observable<T> {
         let now = { Date() }
-        return input(key)
+        return input
             .multicast(ReplaySubject.createUnbounded())
             .refCount()
             .flatMap { new, expiration in
                 expiration >= now()
                     ? Observable.just(new)
-                    : replayingInvalidatingOn(input: input, key: key)
+                    : replayingInvalidatingOn(
+                        input: input
+                    )
             }
     }
     
