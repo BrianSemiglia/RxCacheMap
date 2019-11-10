@@ -23,7 +23,7 @@ extension ObservableType where Element: Hashable {
             cache: condition($1) == false ? $0.cache : Self.adding(
                 key: $1 as AnyObject,
                 value: transform($1) as AnyObject,
-                cache: condition($1) ? $0.cache : NSCache()
+                cache: $0.cache
             ),
             key: $1,
             value: condition($1)
@@ -140,7 +140,7 @@ extension ObservableType where Element: Hashable {
                     input: input,
                     key: $1
                 ),
-                cache: condition($1) ? $0.cache : NSCache()
+                cache: $0.cache
             ),
             key: $1,
             value: condition($1) ? nil : input($1).map { $0.0 }
