@@ -26,15 +26,16 @@ extension ObservableType where Element: Hashable {
                 cache: $0.cache
             ),
             key: $1,
-            value: condition($1)
-                ? nil
-                : transform($1)
+            value: condition($1) ? nil : transform($1)
         )}
         .map {
             $0.value ??
             $0.cache.object(forKey: $0.key as AnyObject) as? T
         }
-        .flatMap { $0.map(Observable.just) ?? .never() }
+        .flatMap {
+            $0.map(Observable.just) ??
+            .never()
+        }
     }
     
     public func cacheFlatMap<T>(
