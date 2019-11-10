@@ -28,7 +28,7 @@ queries.cacheFlatMapLatest { x -> Observable<JSON> in
     NetworkRequest(x).map { /* parse data */ }
 }
 
-queries.cacheFlatMapUntilExpired { x -> Observable<(JSON, Date)> in
+queries.cacheFlatMapInvalidatingOn { x -> Observable<(JSON, Date)> in
     // Closure executed once per unique `x`, replayed when input not unique until date 
     // of output is greater than or equal to date of subsequent replay
     NetworkRequest(x).map { response in 

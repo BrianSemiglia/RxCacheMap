@@ -105,27 +105,27 @@ extension ObservableType where Element: Hashable {
         }
     }
     
-    public func cacheFlatMapUntilExpired<T>(
+    public func cacheFlatMapInvalidatingOn<T>(
         _ input: @escaping (Element) -> Observable<(T, Date)>
     ) -> Observable<T> {
-        cacheFlatMapUntilExpired(observable: input)
+        cacheFlatMapInvalidatingOn(observable: input)
     }
     
     /**
      Caches observables and replays their events when latest incoming value equals a previous value and output Date is greater than Date of event else produces new events.
      */
-    public func cacheFlatMapUntilExpired<T>(
+    public func cacheFlatMapInvalidatingOn<T>(
         observable input: @escaping (Element) -> Observable<(T, Date)>,
         when condition: @escaping (Element) -> Bool = { _ in true }
     ) -> Observable<T> {
-        cachedReplayUntilExpired(
+        cachedReplayInvalidatingOn(
             observable: input,
             when: condition
         )
         .flatMap { $0 }
     }
     
-    private func cachedReplayUntilExpired<T>(
+    private func cachedReplayInvalidatingOn<T>(
         observable input: @escaping (Element) -> Observable<(T, Date)>,
         when condition: @escaping (Element) -> Bool = { _ in true }
     ) -> Observable<Observable<T>> {
@@ -136,7 +136,7 @@ extension ObservableType where Element: Hashable {
         )) {(
             cache: condition($1) == false ? $0.cache : Self.adding(
                 key: $1 as AnyObject,
-                value: Self.replayingUntilExpired(
+                value: Self.replayingInvalidatingOn(
                     input: input,
                     key: $1
                 ),
@@ -152,7 +152,7 @@ extension ObservableType where Element: Hashable {
         }
     }
     
-    private static func replayingUntilExpired<T, U>(
+    private static func replayingInvalidatingOn<T, U>(
         input: @escaping (U) -> Observable<(T, Date)>,
         key: U
     ) -> Observable<T> {
@@ -163,7 +163,7 @@ extension ObservableType where Element: Hashable {
             .flatMap { new, expiration in
                 expiration >= now()
                     ? Observable.just(new)
-                    : replayingUntilExpired(input: input, key: key)
+                    : replayingInvalidatingOn(input: input, key: key)
             }
     }
     

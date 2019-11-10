@@ -202,7 +202,7 @@ class RxCacheTests: XCTestCase {
         waitForExpectations(timeout: 4)
     }
     
-    func testCacheFlatMapUntilExpiredValid() {
+    func testCacheFlatMapInvalidatingOnNever() {
         let x = expectation(description: "")
         var cacheMisses: Int = 0
         var responses: [Int] = []
@@ -218,7 +218,7 @@ class RxCacheTests: XCTestCase {
                     .just(1)
                     .delay(.seconds(1), scheduler: MainScheduler.instance) // invalidate, called
             )
-            .cacheFlatMapUntilExpired { (x: Int) -> Observable<(Int, Date)> in
+            .cacheFlatMapInvalidatingOn { (x: Int) -> Observable<(Int, Date)> in
                 Observable.create { o in
                     cacheMisses += 1
                     o.on(
@@ -234,8 +234,8 @@ class RxCacheTests: XCTestCase {
             .subscribe(
                 onNext: { responses += [$0] },
                 onCompleted: {
-                    XCTAssert(cacheMisses == 1)
-                    XCTAssert(responses.count == 3)
+                    XCTAssertEqual(cacheMisses, 1)
+                    XCTAssertEqual(responses.count, 3)
                     x.fulfill()
                 }
             )
@@ -244,7 +244,7 @@ class RxCacheTests: XCTestCase {
         waitForExpectations(timeout: 1.2)
     }
     
-    func testCacheFlatMapUntilExpiredInvalidated() {
+    func testCacheFlatMapInvalidatingOnSome() {
         let x = expectation(description: "")
         var cacheMisses: Int = 0
         var responses: [Int] = []
@@ -260,7 +260,7 @@ class RxCacheTests: XCTestCase {
                     .just(1)
                     .delay(.seconds(1), scheduler: MainScheduler.instance) // invalidated, called
             )
-            .cacheFlatMapUntilExpired { (x: Int) -> Observable<(Int, Date)> in
+            .cacheFlatMapInvalidatingOn { (x: Int) -> Observable<(Int, Date)> in
                 Observable.create { o in
                     cacheMisses += 1
                     o.on(
