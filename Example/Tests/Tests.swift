@@ -15,11 +15,9 @@ class RxCacheTests: XCTestCase {
                     cacheMisses += 1
                     return x
                 }
-                .reduce([]) { $0 + [$1] }
-                .map { $0.count }
                 .toBlocking()
                 .toArray(),
-            [2]
+            [1, 1]
         )
         XCTAssertEqual(
             cacheMisses,
@@ -39,11 +37,9 @@ class RxCacheTests: XCTestCase {
                     },
                     when: { $0 == 1 }
                 )
-                .reduce([]) { $0 + [$1] }
-                .map { $0.count }
                 .toBlocking()
                 .toArray(),
-            [4]
+            [1, 2, 1, 3]
         )
         XCTAssertEqual(cacheMisses, 3)
     }
@@ -61,11 +57,9 @@ class RxCacheTests: XCTestCase {
                         return Disposables.create()
                     }
                 }
-                .reduce([]) { $0 + [$1] }
-                .map { $0.count }
                 .toBlocking()
                 .toArray(),
-            [2]
+            [1, 1]
         )
         XCTAssertEqual(cacheMisses, 1)
     }
@@ -111,11 +105,9 @@ class RxCacheTests: XCTestCase {
                     },
                     when: { $0 == 1 }
                 )
-                .reduce([]) { $0 + [$1] }
-                .map { $0.count }
                 .toBlocking()
                 .toArray(),
-            [4]
+            [1, 2, 1, 3]
         )
         XCTAssertEqual(cacheMisses, 3)
     }
@@ -183,11 +175,9 @@ class RxCacheTests: XCTestCase {
                         return Disposables.create()
                     }
                 }
-                .reduce([]) { $0 + [$1] }
-                .map { $0.count }
                 .toBlocking()
                 .toArray(),
-            [3]
+            [1, 1, 1]
         )
         XCTAssertEqual(cacheMisses, 1)
     }
@@ -220,11 +210,9 @@ class RxCacheTests: XCTestCase {
                         return Disposables.create()
                     }
                 }
-                .reduce([]) { $0 + [$1] }
-                .map { $0.count }
                 .toBlocking()
                 .toArray(),
-            [3]
+            [1, 1, 1]
         )
         XCTAssertEqual(cacheMisses, 2)
     }
@@ -239,11 +227,9 @@ class RxCacheTests: XCTestCase {
                     Thread.sleep(forTimeInterval: 2)
                     return x
                 }
-                .reduce([]) { $0 + [$1] }
-                .map { $0.count }
                 .toBlocking()
                 .toArray(),
-            [2]
+            [1, 1]
         )
         XCTAssertEqual(cacheMisses, 1)
     }
@@ -258,11 +244,9 @@ class RxCacheTests: XCTestCase {
                     Thread.sleep(forTimeInterval: TimeInterval(x))
                     return x
                 }
-                .reduce([]) { $0 + [$1] }
-                .map { $0.count }
                 .toBlocking()
                 .toArray(),
-            [4]
+            [1, 3, 1, 3]
         )
         XCTAssertEqual(cacheMisses, 3)
     }
@@ -277,11 +261,9 @@ class RxCacheTests: XCTestCase {
                     Thread.sleep(forTimeInterval: 1)
                     return x
                 }
-                .reduce([]) { $0 + [$1] }
-                .map { $0.count }
                 .toBlocking()
                 .toArray(),
-            [2]
+            [1, 1]
         )
         XCTAssertEqual(cacheMisses, 2)
     }
