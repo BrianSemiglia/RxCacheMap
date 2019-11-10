@@ -12,32 +12,31 @@ Cache/memoize the output of `RxSwift.Observables` using cacheMap, cacheFlatMap, 
 ## Usage
 
 ```swift
-queries.cacheMap { x -> URL? in
+events.cacheMap { x -> Result in
     // Closure executed once per unique `x`, replayed when not unique
-    URL(string: "http://..." + x)
+    expensiveOperation(x)
 }
 
-queries.cacheMap(whenExceeding: 1) { x -> URL? in
+events.cacheMap(whenExceeding: 1) { x -> Result in
     // Closure executed once per unique `x` when operation exceeds duration, replayed when not unique
-    URL(string: "http://..." + x)
+    expensiveOperation(x)
 }
 
-queries.cacheFlatMap { x -> Observable<JSON> in
+events.cacheFlatMap { x -> Observable<Result> in
     // Closure executed once per unique `x`, replayed when not unique
-    NetworkRequest(x).map { /* parse data */ }
+    expensiveOperation(x)
 }
 
-queries.cacheFlatMapLatest { x -> Observable<JSON> in
+events.cacheFlatMapLatest { x -> Observable<Result> in
     // Closure executed once per unique `x`, replayed when not unique
     // Any in-flight plays/replays are canceled by subsequent inputs
-    NetworkRequest(x).map { /* parse data */ }
+    expensiveOperation(x)
 }
 
-queries.cacheFlatMapInvalidatingOn { x -> Observable<(JSON, Date)> in
-    // Closure executed once per unique `x`, replayed when input not unique until date 
-    // of output is greater than or equal to date of subsequent replay
-    NetworkRequest(x).map { response in 
-        return (response.JSON, response.expirationDate)
+events.cacheFlatMapInvalidatingOn { x -> Observable<(Result, Date)> in
+    // Closure executed once per unique `x`, replayed when input not unique, cache invalidated when date returned is greater than or equal to date of event
+    expensiveOperation(x).map { output in 
+        return (output, Date() + hours(1))
     }
 }
 ```
