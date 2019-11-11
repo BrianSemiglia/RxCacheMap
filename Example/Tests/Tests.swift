@@ -30,13 +30,10 @@ class RxCacheTests: XCTestCase {
         try XCTAssertEqual(
             Observable
                 .from([1, 2, 1, 3])
-                .cacheMap(
-                    transform: { x -> Int in
-                        cacheMisses += 1
-                        return x
-                    },
-                    when: { $0 == 1 }
-                )
+                .cacheMap(when: { $0 == 1 }) { x -> Int in
+                    cacheMisses += 1
+                    return x
+                }
                 .toBlocking()
                 .toArray(),
             [1, 2, 1, 3]
@@ -94,17 +91,14 @@ class RxCacheTests: XCTestCase {
         try XCTAssertEqual(
             Observable
                 .from([1, 2, 1, 3])
-                .cacheFlatMap(
-                    observable: { x -> Observable<Int> in
-                        Observable.create { o in
-                            cacheMisses += 1
-                            o.on(.next(x))
-                            o.on(.completed)
-                            return Disposables.create()
-                        }
-                    },
-                    when: { $0 == 1 }
-                )
+                .cacheFlatMap(when: { $0 == 1 }) { x -> Observable<Int> in
+                    Observable.create { o in
+                        cacheMisses += 1
+                        o.on(.next(x))
+                        o.on(.completed)
+                        return Disposables.create()
+                    }
+                }
                 .toBlocking()
                 .toArray(),
             [1, 2, 1, 3]
