@@ -2,6 +2,9 @@ import RxSwift
 
 extension ObservableType where Element: Hashable {
     
+    /**
+    Caches events and replays when latest incoming value equals a previous and the execution of the map took more time than the specified duration else produces new events.
+    */
     public func cacheMap<T>(
         whenExceeding duration: TimeInterval,
         _ input: @escaping (Element) -> T
