@@ -48,10 +48,10 @@ class ViewController: UIViewController {
 }
 
 extension ObservableType {
-    public func unwrap<T>() -> Observable<T> where Element == T? {
+    public func unwrap<T>() -> Observable<T> where Element == T? { return
         flatMap { $0.map(Observable.just) ?? .never() }
     }
-    func unwrapMap<U>(_ f: @escaping (Element) -> U?) -> Observable<U> {
+    func unwrapMap<U>(_ f: @escaping (Element) -> U?) -> Observable<U> { return
         map(f).unwrap()
     }
 }
