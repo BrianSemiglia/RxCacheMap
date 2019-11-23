@@ -10,7 +10,7 @@ extension ObservableType where Element: Hashable {
         cache: Persisting<Element, T> = .nsCache(),
         input: @escaping (Element) -> T
     ) -> Observable<T> {
-        scan((
+        return scan((
             cache: cache,
             key: Optional<Element>.none,
             value: Optional<T>.none
@@ -62,7 +62,7 @@ extension ObservableType where Element: Hashable {
         when condition: @escaping (Element) -> Bool = { _ in true },
         transform: @escaping (Element) -> T
     ) -> Observable<T> {
-        scan((
+        return scan((
             cache: cache,
             key: Optional<Element>.none,
             value: Optional<T>.none
@@ -93,7 +93,7 @@ extension ObservableType where Element: Hashable {
         when condition: @escaping (Element) -> Bool = { _ in true },
         observable input: @escaping (Element) -> Observable<T>
     ) -> Observable<T> {
-        cachedReplay(
+        return cachedReplay(
             cache: cache,
             when: condition,
             observable: input
@@ -110,7 +110,7 @@ extension ObservableType where Element: Hashable {
         when condition: @escaping (Element) -> Bool = { _ in true },
         observable input: @escaping (Element) -> Observable<T>
     ) -> Observable<T> {
-        cachedReplay(
+        return cachedReplay(
             cache: cache,
             when: condition,
             observable: input
@@ -123,7 +123,7 @@ extension ObservableType where Element: Hashable {
         when condition: @escaping (Element) -> Bool = { _ in true },
         observable input: @escaping (Element) -> Observable<T>
     ) -> Observable<Observable<T>> {
-        scan((
+        return scan((
             cache: cache,
             key: Optional<Element>.none,
             value: Optional<Observable<T>>.none
@@ -154,7 +154,7 @@ extension ObservableType where Element: Hashable {
         cache: Persisting<Element, Observable<T>> = .nsCache(),
         observable input: @escaping (Element) -> Observable<(T, Date)>
     ) -> Observable<T> {
-        cachedReplayInvalidatingOn(
+        return cachedReplayInvalidatingOn(
             when: condition,
             cache: cache,
             observable: input
@@ -167,7 +167,7 @@ extension ObservableType where Element: Hashable {
         cache: Persisting<Element, Observable<T>>,
         observable input: @escaping (Element) -> Observable<(T, Date)>
     ) -> Observable<Observable<T>> {
-        scan((
+        return scan((
             cache: cache,
             key: Optional<Element>.none,
             value: Optional<Observable<T>>.none

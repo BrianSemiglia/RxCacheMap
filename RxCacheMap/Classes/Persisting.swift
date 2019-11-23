@@ -19,7 +19,7 @@ public struct Persisting<Key, Value> {
 
 extension Persisting {
     public static func nsCache<K, V>() -> Persisting<K, V> {
-        Persisting<K, V>(
+        return Persisting<K, V>(
             backing: NSCache<AnyObject, AnyObject>(),
             set: { cache, value, key in
                 cache.setObject(
