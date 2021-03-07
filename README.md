@@ -33,7 +33,7 @@ events.cacheFlatMapInvalidatingOn { x -> Observable<(Result, Date)> in
     }
 }
 
-// You can prodvide your own cache (disk, in-memory, etc.). NSCache is the default.
+// You can provide your own cache (disk, in-memory, etc.). NSCache is the default.
 events.cacheMap(cache: MyCache()) { x -> Result in
     expensiveOperation(x)
 }
