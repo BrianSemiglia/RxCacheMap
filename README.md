@@ -11,25 +11,31 @@ Cache/memoize the output of `RxSwift.Observables` using cacheMap, cacheFlatMap, 
 
 ## Usage
 
-Aside from caching, `cacheMap`, `cacheFlatMap`, `cacheFlatMapLatest` all work like their non-cache counterparts.
+Aside from caching all functions work like their non-cache Rx-counterparts.
 
 ```swift
 events.cacheMap { x -> Result in
-    // Closure executed once per unique `x`, replayed when not unique
+    // Closure executed once per unique `x`, replayed when not unique.
     expensiveOperation(x)
 }
 
-events.cacheMap(whenExceeding: 1) { x -> Result in
-    // Closure executed once per unique `x` when operation exceeds duration, replayed when not unique
+events.cacheMap(whenExceeding: Seconds(1)) { x -> Result in
+    // Closure executed once per unique `x`, replayed when operation of unique value took 
+    // longer than specified duration.
     expensiveOperation(x)
 }
 
 events.cacheFlatMapInvalidatingOn { x -> Observable<(Result, Date)> in
-    // Closure executed once per unique `x`, replayed when input not unique, cache invalidated 
-    // when date returned is greater than or equal to date of event
+    // Closure executed once per unique `x`, replayed when input not unique. Cache 
+    // invalidated when date returned is greater than or equal to date of event.
     expensiveOperation(x).map { output in 
         return (output, Date() + hours(1))
     }
+}
+
+// You can prodvide your own cache (disk, in-memory, etc.). NSCache is the default.
+events.cacheMap(cache: MyCache()) { x -> Result in
+    expensiveOperation(x)
 }
 ```
 
