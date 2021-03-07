@@ -142,8 +142,8 @@ extension ObservableType where Element: Hashable {
         )}
         .map { tuple in
             tuple.value ??
-            tuple.key.flatMap { tuple.cache.value($0) }
-            ?? .never()
+            tuple.key.flatMap { tuple.cache.value($0) } ??
+            .never()
         }
     }
     
@@ -223,7 +223,7 @@ extension ObservableType where Element: Hashable {
     }
 }
 
-extension DispatchTimeInterval {
+private extension DispatchTimeInterval {
     var seconds: Double? {
         switch self {
         case .seconds(let value):

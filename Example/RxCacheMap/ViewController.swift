@@ -27,12 +27,12 @@ class ViewController: UIViewController {
             .cacheFlatMapLatest {
                 Observable
                     .just($0)
-                    .unwrap()
-                    .unwrapMap { $0.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) }
-                    .unwrapMap { URL(string: "https://en.wikipedia.org/?search=" + $0) }
+                    .compact()
+                    .compactMap { $0.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) }
+                    .compactMap { URL(string: "https://en.wikipedia.org/?search=" + $0) }
                     .map       { URLRequest(url: $0) }
                     .flatMap   (URLSession.shared.rx.response)
-                    .unwrapMap {
+                    .compactMap {
                         try? NSAttributedString(
                             data: $0.data,
                             options: [.documentType: NSAttributedString.DocumentType.html],
@@ -48,11 +48,11 @@ class ViewController: UIViewController {
 }
 
 extension ObservableType {
-    public func unwrap<T>() -> Observable<T> where Element == T? {
+    public func compact<T>() -> Observable<T> where Element == T? {
         return flatMap { $0.map(Observable.just) ?? .never() }
     }
-    func unwrapMap<U>(_ f: @escaping (Element) -> U?) -> Observable<U> {
-        return map(f).unwrap()
+    func compactMap<U>(_ f: @escaping (Element) -> U?) -> Observable<U> {
+        return map(f).compact()
     }
 }
 
