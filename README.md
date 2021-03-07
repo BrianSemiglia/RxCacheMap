@@ -11,7 +11,7 @@ Cache/memoize the output of `RxSwift.Observables` using cacheMap, cacheFlatMap, 
 
 ## Usage
 
-Aside from caching all functions work like their non-cache Rx-counterparts.
+Aside from caching, all functions work like their non-cache Rx-counterparts.
 
 ```swift
 events.cacheMap { x -> Result in
