@@ -216,7 +216,7 @@ class RxCacheTests: XCTestCase {
         try XCTAssertEqual(
             Observable
                 .from([1, 1])
-                .cacheMap(whenExceeding: 1) { x -> Int in
+                .cacheMap(whenExceeding: .seconds(1)) { x -> Int in
                     cacheMisses += 1
                     Thread.sleep(forTimeInterval: 2)
                     return x
@@ -233,7 +233,7 @@ class RxCacheTests: XCTestCase {
         try XCTAssertEqual(
             Observable
                 .from([1, 3, 1, 3])
-                .cacheMap(whenExceeding: 2) { x -> Int in
+                .cacheMap(whenExceeding: .seconds(2)) { x -> Int in
                     cacheMisses += 1
                     Thread.sleep(forTimeInterval: TimeInterval(x))
                     return x
@@ -250,7 +250,7 @@ class RxCacheTests: XCTestCase {
         try XCTAssertEqual(
             Observable
                 .from([1, 1])
-                .cacheMap(whenExceeding: 2) { x -> Int in
+                .cacheMap(whenExceeding: .seconds(2)) { x -> Int in
                     cacheMisses += 1
                     Thread.sleep(forTimeInterval: 1)
                     return x

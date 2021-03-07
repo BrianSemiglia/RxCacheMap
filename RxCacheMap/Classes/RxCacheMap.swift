@@ -5,8 +5,9 @@ extension ObservableType where Element: Hashable {
     /**
     Caches events and replays when latest incoming value equals a previous and the execution of the map took more time than the specified duration else produces new events.
     */
+
     public func cacheMap<T>(
-        whenExceeding duration: TimeInterval,
+        whenExceeding duration: DispatchTimeInterval,
         cache: Persisting<Element, T> = .nsCache(),
         input: @escaping (Element) -> T
     ) -> Observable<T> {
@@ -25,7 +26,7 @@ extension ObservableType where Element: Hashable {
                 let start = Date()
                 let result = input($1)
                 let end = Date()
-                if end.timeIntervalSince(start) > duration {
+                if duration.seconds.map({ end.timeIntervalSince(start) > $0 }) == true {
                     return (
                         cache: Self.adding(
                             key: $1,
@@ -218,6 +219,25 @@ extension ObservableType where Element: Hashable {
             return cache
         } else {
             return cache
+        }
+    }
+}
+
+extension DispatchTimeInterval {
+    var seconds: Double? {
+        switch self {
+        case .seconds(let value):
+            return Double(value)
+        case .milliseconds(let value):
+            return Double(value) * 0.001
+        case .microseconds(let value):
+            return Double(value) * 0.000001
+        case .nanoseconds(let value):
+            return Double(value) * 0.000000001
+        case .never:
+            return nil
+        @unknown default:
+            return nil
         }
     }
 }

@@ -19,7 +19,7 @@ events.cacheMap { x -> Result in
     expensiveOperation(x)
 }
 
-events.cacheMap(whenExceeding: Seconds(1)) { x -> Result in
+events.cacheMap(whenExceeding: .seconds(1)) { x -> Result in
     // Closure executed once per unique `x`, replayed when operation of unique value took 
     // longer than specified duration.
     expensiveOperation(x)
