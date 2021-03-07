@@ -1,0 +1,6 @@
+framework module RxCacheMap {
+  umbrella header "RxCacheMap-umbrella.h"
+
+  export *
+  module * { export * }
+}
