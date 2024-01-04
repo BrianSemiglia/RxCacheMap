@@ -1,13 +1,13 @@
-platform :ios, '9.0'
+platform :ios, '12.0'
 use_frameworks!
 
 target 'RxCacheMap_Example' do
   pod 'RxCacheMap', :path => '../'
-  pod 'RxSwift', '~> 5.0'
-  pod 'RxCocoa', '~> 5.0'
+  pod 'RxSwift', '~> 6.0'
+  pod 'RxCocoa', '~> 6.0'
   target 'RxCacheMap_Tests' do
     inherit! :search_paths
-    pod 'RxTest'
-    pod 'RxBlocking'
+    pod 'RxTest', '~> 6.0'
+    pod 'RxBlocking', '~> 6.0'
   end
 end
