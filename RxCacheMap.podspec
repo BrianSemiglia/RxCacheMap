@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'RxCacheMap'
-  s.version          = '1.0.1'
+  s.version          = '1.1.0'
   s.summary          = 'A collection of caching RxSwift operators.'
   s.description      = 'Cache/memoize the output of RxSwift.Observables using cacheMap, cacheFlatMap, cacheFlatMapLatest and cacheFlatMapInvalidatingOn.'
   s.homepage         = 'https://github.com/briansemiglia/RxCacheMap'
@@ -12,8 +12,8 @@ Pod::Spec.new do |s|
   }
   s.social_media_url = 'https://twitter.com/brians_'
   s.ios.deployment_target = '12.0'
-  s.macos.deployment_target = '10.9'
+  s.macos.deployment_target = '11.0'
   s.source_files = 'RxCacheMap/Classes/**/*'
-  s.swift_version = '5.1'
+  s.swift_version = '5.3'
   s.dependency 'RxSwift', '~> 6.0'
 end
