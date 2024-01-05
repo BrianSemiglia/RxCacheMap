@@ -7,7 +7,7 @@ target 'RxCacheMap_Example' do
   pod 'RxCocoa', '~> 6.0'
   target 'RxCacheMap_Tests' do
     inherit! :search_paths
-    pod 'RxTest', '~> 6.0'
     pod 'RxBlocking', '~> 6.0'
+    pod 'RxTest', '~> 6.0'
   end
 end

@@ -23,10 +23,10 @@ class ViewController: UIViewController {
         input
             .rx
             .text
-            .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInteractive))
-            .cacheFlatMapLatest {
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .cacheFlatMapLatest(cache: .diskCache()) { x -> Observable<AttributedString?> in
                 Observable
-                    .just($0)
+                    .just(x)
                     .compact()
                     .compactMap { $0.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) }
                     .compactMap { URL(string: "https://en.wikipedia.org/?search=" + $0) }
@@ -39,8 +39,10 @@ class ViewController: UIViewController {
                             documentAttributes: nil
                         )
                     }
+                    .map { AttributedString(nsAttributedString: $0) }
             }
-            .observeOn(MainScheduler.instance)
+            .compactMap { $0?.attributedString }
+            .observe(on: MainScheduler.instance)
             .bind(to: output.rx.attributedText)
             .disposed(by: cleanup)
     }
@@ -56,3 +58,24 @@ extension ObservableType {
     }
 }
 
+class AttributedString : Codable {
+
+    let attributedString : NSAttributedString
+
+    init(nsAttributedString : NSAttributedString) {
+        self.attributedString = nsAttributedString
+    }
+
+    public required init(from decoder: Decoder) throws {
+        let singleContainer = try decoder.singleValueContainer()
+        guard let attributedString = try NSKeyedUnarchiver.unarchivedObject(ofClass: NSAttributedString.self, from: singleContainer.decode(Data.self)) else {
+            throw DecodingError.dataCorruptedError(in: singleContainer, debugDescription: "Data is corrupted")
+        }
+        self.attributedString = attributedString
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var singleContainer = encoder.singleValueContainer()
+        try singleContainer.encode(NSKeyedArchiver.archivedData(withRootObject: attributedString, requiringSecureCoding: false))
+    }
+}

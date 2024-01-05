@@ -261,5 +261,164 @@ class RxCacheTests: XCTestCase {
         )
         XCTAssertEqual(cacheMisses, 2)
     }
-    
+ 
+    func testDiskPersistenceMap() throws {
+
+        // Separate cache instances are used but values are persisted between them.
+
+        let cache: Persisting<Int, Int> = Persisting<Int, Int>.diskCache()
+        cache.reset()
+
+        var cacheMissesInitial: Int = 0
+        try XCTAssertEqual(
+            Observable.from([1, 1])
+                .cacheMap(cache: .diskCache()) { x -> Int in
+                    cacheMissesInitial += 1
+                    return x
+                }
+                .toBlocking()
+                .toArray(),
+            [1, 1]
+        )
+        XCTAssertEqual(
+            cacheMissesInitial,
+            1
+        )
+
+        var cacheMissesSubsequent: Int = 0
+        try XCTAssertEqual(
+            Observable.from([1, 1])
+                .cacheMap(cache: .diskCache()) { x -> Int in
+                    cacheMissesSubsequent += 1
+                    return x
+                }
+                .toBlocking()
+                .toArray(),
+            [1, 1]
+        )
+        XCTAssertEqual(
+            cacheMissesSubsequent,
+            0
+        )
+    }
+
+    func testDiskPersistenceWithIDMap() throws {
+
+        // Separate cache instances are used but values are persisted between them.
+
+        let id = "id"
+        let cache: Persisting<Int, Int> = Persisting<Int, Int>.diskCache(id: id)
+        cache.reset()
+
+        var cacheMissesInitial: Int = 0
+        try XCTAssertEqual(
+            Observable.from([1, 1])
+                .cacheMap(cache: .diskCache(id: id)) { x -> Int in
+                    cacheMissesInitial += 1
+                    return x
+                }
+                .toBlocking()
+                .toArray(),
+            [1, 1]
+        )
+        XCTAssertEqual(
+            cacheMissesInitial,
+            1
+        )
+
+        var cacheMissesSubsequent: Int = 0
+        try XCTAssertEqual(
+            Observable.from([1, 1])
+                .cacheMap(cache: .diskCache(id: id)) { x -> Int in
+                    cacheMissesSubsequent += 1
+                    return x
+                }
+                .toBlocking()
+                .toArray(),
+            [1, 1]
+        )
+        XCTAssertEqual(
+            cacheMissesSubsequent,
+            0
+        )
+
+        cache.reset()
+
+        var cacheMisses2: Int = 0
+        try XCTAssertEqual(
+            Observable.from([1, 1])
+                .cacheMap(cache: .diskCache(id: id)) { x -> Int in
+                    cacheMisses2 += 1
+                    return x
+                }
+                .toBlocking()
+                .toArray(),
+            [1, 1]
+        )
+        XCTAssertEqual(
+            cacheMisses2,
+            1
+        )
+    }
+
+    func testDiskPersistenceFlatMap() {
+
+        // Separate cache instances are used but values are persisted between them.
+
+        let cache: Persisting<Int, Int> = .diskCache()
+        cache.reset()
+
+        var cacheMisses: Int = 0
+        try XCTAssertEqual(
+            Observable.from([1, 1, 1])
+                .cacheFlatMap(cache: .diskCache()) { x -> Observable<Int> in
+                    Observable.create {
+                        cacheMisses += 1
+                        $0.onNext(x)
+                        $0.onCompleted()
+                        return Disposables.create()
+                    }
+                }
+                .toBlocking()
+                .toArray(),
+            [1, 1, 1]
+        )
+        XCTAssertEqual(cacheMisses, 1)
+
+        var cacheMisses2: Int = 0
+        try XCTAssertEqual(
+            Observable.from([1, 1, 1])
+                .cacheFlatMap(cache: .diskCache()) { x -> Observable<Int> in
+                    Observable.create {
+                        cacheMisses2 += 1
+                        $0.onNext(x)
+                        $0.onCompleted()
+                        return Disposables.create()
+                    }
+                }
+                .toBlocking()
+                .toArray(),
+            [1, 1, 1]
+        )
+        XCTAssertEqual(cacheMisses2, 0)
+
+        cache.reset()
+
+        var cacheMisses3: Int = 0
+        try XCTAssertEqual(
+            Observable.from([1, 1, 1])
+                .cacheFlatMap(cache: .diskCache()) { x -> Observable<Int> in
+                    Observable.create {
+                        cacheMisses3 += 1
+                        $0.onNext(x)
+                        $0.onCompleted()
+                        return Disposables.create()
+                    }
+                }
+                .toBlocking()
+                .toArray(),
+            [1, 1, 1]
+        )
+        XCTAssertEqual(cacheMisses3, 1)
+    }
 }
