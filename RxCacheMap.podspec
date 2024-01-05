@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   }
   s.social_media_url = 'https://twitter.com/brians_'
   s.ios.deployment_target = '12.0'
-  s.macos.deployment_target = '11.0'
+  s.macos.deployment_target = '10.10'
   s.source_files = 'RxCacheMap/Classes/**/*'
   s.swift_version = '5.3'
   s.dependency 'RxSwift', '~> 6.0'
