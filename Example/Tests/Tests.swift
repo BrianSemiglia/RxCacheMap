@@ -421,4 +421,33 @@ class RxCacheTests: XCTestCase {
         )
         XCTAssertEqual(cacheMisses3, 1)
     }
+
+    func testDiskPersistedErrorReplay() {
+
+        struct Foo: Error {}
+
+        persistToDisk(
+            key: 1,
+            item: Observable.create {
+                $0.onNext(1)
+                $0.onNext(1)
+                $0.onError(Foo())
+                return Disposables.create()
+            }
+        )
+
+        var cacheMisses: Int = 0
+        try XCTAssertEqual(
+            Observable.from([1, 1, 1])
+                .cacheFlatMap(cache: .diskCache()) { x -> Observable<Int> in
+                    cacheMisses += 1
+                    return Observable.never() // Closure shouldn't execute as it should be cached
+                }
+                .catchAndReturn(99)
+                .toBlocking()
+                .toArray(),
+            [1, 1, 99]
+        )
+        XCTAssertEqual(cacheMisses, 0)
+    }
 }
