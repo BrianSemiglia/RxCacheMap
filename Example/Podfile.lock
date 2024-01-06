@@ -1,8 +1,7 @@
 PODS:
   - RxBlocking (6.6.0):
     - RxSwift (= 6.6.0)
-  - RxCacheMap (1.0.1):
-    - RxBlocking (~> 6.0)
+  - RxCacheMap (1.1.0):
     - RxSwift (~> 6.0)
   - RxCocoa (6.6.0):
     - RxRelay (= 6.6.0)
@@ -34,12 +33,12 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   RxBlocking: fbd1f8501443024f686e556f36dac79b0d5f4d7c
-  RxCacheMap: 0d2ac8616b3664e054bcdbf7fbb262411b154067
+  RxCacheMap: 6e6977c9052480c999b80844c0068f0d2c414563
   RxCocoa: 44a80de90e25b739b5aeaae3c8c371a32e3343cc
   RxRelay: 45eaa5db8ee4fb50e5ebd57deec0159e97fa51e6
   RxSwift: a4b44f7d24599f674deebd1818eab82e58410632
   RxTest: a23f26bb53a5e146a0a69db4f0fa0b69001ce7f4
 
-PODFILE CHECKSUM: 5a2741297b68fb1e74544f8a40ef82420fa816c2
+PODFILE CHECKSUM: ef8a8736134a92ae40bda27254761c937f74784b
 
 COCOAPODS: 1.14.3
