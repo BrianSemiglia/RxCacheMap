@@ -4,8 +4,8 @@ extension Persisting {
     public static func diskCache<K: Hashable, V: Codable>(id: String = "default") -> Persisting<K, Observable<V>> {
         Persisting<K, Observable<V>>(
             backing: (
-                writes: NSCache<AnyObject, AnyObject>(),
-                memory: NSCache<AnyObject, AnyObject>(),
+                writes: TypedCache<K, Observable<V>>(),
+                memory: TypedCache<K, Observable<V>>(),
                 disk: URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("com.cachemap.rxswift.\(id)")
             ),
             set: { backing, value, key in
@@ -29,15 +29,15 @@ extension Persisting {
                             .flatMap { _ in Observable<V>.empty() }
                     )
                     ,
-                    forKey: key as AnyObject
+                    forKey: key
                 )
             },
             value: { backing, key in
-                if let write = backing.writes.object(forKey: key as AnyObject) as? Observable<V> {
+                if let write = backing.writes.object(forKey: key) {
                     // 1. This write-observable has disk write side-effect. Next access will trigger disk read
-                    backing.writes.removeObject(forKey: key as AnyObject) // SIDE-EFFECT
+                    backing.writes.removeObject(forKey: key) // SIDE-EFFECT
                     return write
-                } else if let memory = backing.memory.object(forKey: key as AnyObject) as? Observable<V> {
+                } else if let memory = backing.memory.object(forKey: key) {
                     // 4. Further gets come from memory
                     return memory
                 } else if let data = try? Data(contentsOf: backing.disk.appendingPathComponent("\(key)")) {
@@ -45,7 +45,7 @@ extension Persisting {
                     if let values = try? JSONDecoder().decode([WrappedEvent<V>].self, from: data) {
                         let o = Observable.observable(from: values)
                         // 3. Data is made an observable again but without the disk write side-effect
-                        backing.memory.setObject(o, forKey: key as AnyObject)
+                        backing.memory.setObject(o, forKey: key)
                         return o
                     } else {
                         return nil
