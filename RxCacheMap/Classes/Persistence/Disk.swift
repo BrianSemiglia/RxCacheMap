@@ -66,11 +66,12 @@ extension Persisting {
         )
     }
 
-    public static func diskCache<K: Hashable, V: Codable>(id: String = "default") -> Persisting<K, V> {
+    public static func diskCache<K: Codable, V: Codable>(id: String = "default") -> Persisting<K, V> {
         return Persisting<K, V>(
             backing: URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("com.cachemap.rxswift.\(id)"),
             set: { folder, value, key in
                 do {
+                    let key = try! Persisting.sha256Hash(for: key) // TODO: Revisit force unwrap
                     try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
                     try JSONEncoder().encode(value).write(to: folder.appendingPathComponent("\(key)"))
                 } catch {
@@ -78,7 +79,8 @@ extension Persisting {
                 }
             },
             value: { folder, key in
-                (try? Data(contentsOf: folder.appendingPathComponent("\(key)")))
+                (try? Persisting.sha256Hash(for: key))
+                    .flatMap { key in (try? Data(contentsOf: folder.appendingPathComponent("\(key)"))) }
                     .flatMap { data in try? JSONDecoder().decode(V.self, from: data) }
             },
             reset: { url in
@@ -94,6 +96,26 @@ extension Persisting {
             .hash(data: try JSONEncoder().encode(data))
             .compactMap { String(format: "%02x", $0) }
             .joined()
+    }
+
+    // Testing
+    public static func persistToDisk<K: Codable, V: Codable>(key: K, item: Observable<V>) {
+        _ = item
+        .materialize()
+        .toArray()
+        .asObservable()
+        .do(onNext: { next in
+            let key = try! Persisting.sha256Hash(for: key)
+            // SIDE-EFFECTS
+            try FileManager.default.createDirectory(
+                at: URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("com.cachemap.rxswift.default"),
+                withIntermediateDirectories: true
+            )
+            try JSONEncoder()
+                .encode(next.map(WrappedEvent.init(event:)))
+                .write(to: URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("com.cachemap.rxswift.default").appendingPathComponent("\(key)"))
+        })
+        .subscribe()
     }
 }
 
@@ -166,23 +188,4 @@ fileprivate extension Observable {
             return Disposables.create()
         }
     }
-}
-
-// Testing
-public func persistToDisk<K: Hashable, V: Codable>(key: K, item: Observable<V>) {
-    _ = item
-    .materialize()
-    .toArray()
-    .asObservable()
-    .do(onNext: { next in
-        // SIDE-EFFECTS
-        try FileManager.default.createDirectory(
-            at: URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("com.cachemap.rxswift.default"),
-            withIntermediateDirectories: true
-        )
-        try JSONEncoder()
-            .encode(next.map(WrappedEvent.init(event:)))
-            .write(to: URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("com.cachemap.rxswift.default").appendingPathComponent("\(key)"))
-    })
-    .subscribe()
 }

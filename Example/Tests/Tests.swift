@@ -426,7 +426,7 @@ class RxCacheTests: XCTestCase {
 
         struct Foo: Error {}
 
-        persistToDisk(
+        Persisting<Int, Int>.persistToDisk(
             key: 1,
             item: Observable.create {
                 $0.onNext(1)
