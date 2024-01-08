@@ -1,14 +1,16 @@
 import RxSwift
+import CryptoKit
 
 extension Persisting {
-    public static func diskCache<K: Hashable, V: Codable>(id: String = "default") -> Persisting<K, Observable<V>> {
+    public static func diskCache<K: Codable, V: Codable>(id: String = "default") -> Persisting<K, Observable<V>> {
         Persisting<K, Observable<V>>(
             backing: (
-                writes: TypedCache<K, Observable<V>>(),
-                memory: TypedCache<K, Observable<V>>(),
+                writes: TypedCache<String, Observable<V>>(),
+                memory: TypedCache<String, Observable<V>>(),
                 disk: URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("com.cachemap.rxswift.\(id)")
             ),
             set: { backing, value, key in
+                let key = try! Persisting.sha256Hash(for: key) // TODO: Revisit force unwrap
                 let shared = value
                     .multicast(ReplaySubject.createUnbounded())
                     .refCount()
@@ -33,6 +35,7 @@ extension Persisting {
                 )
             },
             value: { backing, key in
+                let key = try! Persisting.sha256Hash(for: key) // TODO: Revisit force unwrap
                 if let write = backing.writes.object(forKey: key) {
                     // 1. This write-observable has disk write side-effect. Next access will trigger disk read
                     backing.writes.removeObject(forKey: key) // SIDE-EFFECT
@@ -84,6 +87,13 @@ extension Persisting {
                 )
             }
         )
+    }
+
+    private static func sha256Hash<T: Codable>(for data: T) throws -> String {
+        SHA256
+            .hash(data: try JSONEncoder().encode(data))
+            .compactMap { String(format: "%02x", $0) }
+            .joined()
     }
 }
 
