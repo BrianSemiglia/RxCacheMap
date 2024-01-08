@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'RxCacheMap'
-  s.version          = '1.1.1'
+  s.version          = '1.1.2'
   s.summary          = 'A collection of caching RxSwift operators.'
   s.description      = 'Cache/memoize the output of RxSwift.Observables using cacheMap, cacheFlatMap, cacheFlatMapLatest and cacheFlatMapInvalidatingOn.'
   s.homepage         = 'https://github.com/briansemiglia/RxCacheMap'
