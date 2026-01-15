@@ -7,7 +7,7 @@
 
 ## Description
 
-Cache/memoize the output of `RxSwift.Observables` using `cacheMap`, `cacheFlatMap`, `cacheFlatMapLatest` and `cacheFlatMapUntilExpired`. Also available for Combine: https://github.com/BrianSemiglia/CombineCacheMap
+Cache/memoize the output of `RxSwift.Observables` using `cacheMap`, `cacheFlatMap`, `cacheFlatMapLatest` and `cacheFlatMapUntilExpired`. The Combine version of this library is a bit ahead and supports disk-caching: https://github.com/BrianSemiglia/CombineCacheMap
 
 ## Usage
 
